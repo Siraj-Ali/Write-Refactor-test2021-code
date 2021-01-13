@@ -8,9 +8,7 @@ use DTApi\Models\Distance;
 use Illuminate\Http\Request;
 use DTApi\Repository\BookingRepository;
 
-use Symfony\Component\HttpFoundation\Response;
-
-/** 
+/**
  * Class BookingController
  * @package DTApi\Http\Controllers
  */
@@ -47,11 +45,7 @@ class BookingController extends Controller
             $response = $this->repository->getAll($request);
         }
 
-         // for vue or other front end framework we need and recommanded way to send response like this :
-         return response([
-             'status' => true,
-             'response' => $response
-          ], Response::HTTP_OK);
+        return response($response);
     }
 
     /**
@@ -62,13 +56,7 @@ class BookingController extends Controller
     {
         $job = $this->repository->with('translatorJobRel.user')->find($id);
 
-        //return response($job);
-
-        // for vue or other front end framework we need and recommanded way to send response like this :
-         return response([
-             'status' => true,
-             'response' => $job
-          ], Response::HTTP_OK);
+        return response($job);
     }
 
     /**
@@ -77,15 +65,11 @@ class BookingController extends Controller
      */
     public function store(Request $request)
     {
-        $response = $this->repository->store($request->__authenticatedUser, $request->all());
+        $data = $request->all();
 
-        //return response($response);
+        $response = $this->repository->store($request->__authenticatedUser, $data);
 
-       // for vue or other front end framework we need and recommanded way to send response like this :
-        return response([
-             'status' => true,
-             'response' => $response
-          ], Response::HTTP_OK);
+        return response($response);
 
     }
 
@@ -100,11 +84,7 @@ class BookingController extends Controller
         $cuser = $request->__authenticatedUser;
         $response = $this->repository->updateJob($id, array_except($data, ['_token', 'submit']), $cuser);
 
-         // for vue or other front end framework we need and recommanded way to send response like this :
-         return response([
-              'status' => true,
-              'response' => $response
-           ], Response::HTTP_OK);
+        return response($response);
     }
 
     /**
@@ -114,15 +94,11 @@ class BookingController extends Controller
     public function immediateJobEmail(Request $request)
     {
         $adminSenderEmail = config('app.adminemail');
+        $data = $request->all();
 
-        $response = $this->repository->storeJobEmail($request->all());
+        $response = $this->repository->storeJobEmail($data);
 
-        //return response($response);
-// for vue or other front end framework we need and recommanded way to send response like this :
-        return response([
-            'status' => true,
-            'response' => $response
-         ], Response::HTTP_OK);
+        return response($response);
     }
 
     /**
@@ -134,12 +110,7 @@ class BookingController extends Controller
         if($user_id = $request->get('user_id')) {
 
             $response = $this->repository->getUsersJobsHistory($user_id, $request);
-
-           // for vue or other front end framework we need and recommanded way to send response like this :
-         return response([
-            'status' => true,
-            'response' => $response
-         ], Response::HTTP_OK);
+            return response($response);
         }
 
         return null;
@@ -151,16 +122,12 @@ class BookingController extends Controller
      */
     public function acceptJob(Request $request)
     {
+        $data = $request->all();
         $user = $request->__authenticatedUser;
 
-        $response = $this->repository->acceptJob($request->all(), $user);
+        $response = $this->repository->acceptJob($data, $user);
 
- // for vue or other front end framework we need and recommanded way to send response like this :
-        return response([
-            'status' => true,
-            'response' => $response
-         ], Response::HTTP_OK);
-        //return response($response);
+        return response($response);
     }
 
     public function acceptJobWithId(Request $request)
@@ -170,13 +137,7 @@ class BookingController extends Controller
 
         $response = $this->repository->acceptJobWithId($data, $user);
 
-        // return response($response);
-
-        // for vue or other front end framework we need and recommanded way to send response like this :
-            return response([
-                'status' => true,
-                'response' => $response
-             ], Response::HTTP_OK);
+        return response($response);
     }
 
     /**
@@ -185,17 +146,12 @@ class BookingController extends Controller
      */
     public function cancelJob(Request $request)
     {
+        $data = $request->all();
         $user = $request->__authenticatedUser;
 
-        $response = $this->repository->cancelJobAjax($request->all(), $user);
+        $response = $this->repository->cancelJobAjax($data, $user);
 
-        // return response($response);
-
-        // for vue or other front end framework we need and recommanded way to send response like this :
-            return response([
-                'status' => true,
-                'response' => $response
-             ], Response::HTTP_OK);
+        return response($response);
     }
 
     /**
@@ -208,13 +164,7 @@ class BookingController extends Controller
 
         $response = $this->repository->endJob($data);
 
-        // return response($response);
-
-        // for vue or other front end framework we need and recommanded way to send response like this :
-            return response([
-                'status' => true,
-                'response' => $response
-             ], Response::HTTP_OK);
+        return response($response);
 
     }
 
@@ -234,60 +184,59 @@ class BookingController extends Controller
      */
     public function getPotentialJobs(Request $request)
     {
+        $data = $request->all();
         $user = $request->__authenticatedUser;
 
         $response = $this->repository->getPotentialJobs($user);
 
-        // for vue or other front end framework we need and recommanded way to send response like this :
-            return response([
-                'status' => true,
-                'response' => $response
-             ], Response::HTTP_OK);
+        return response($response);
     }
 
     public function distanceFeed(Request $request)
     {
-        if (isset($request->distance) && $request->distance != "") {
-            $distance = $request->distance;
+        $data = $request->all();
+
+        if (isset($data['distance']) && $data['distance'] != "") {
+            $distance = $data['distance'];
         } else {
             $distance = "";
         }
-        if (isset($request->time) && $request->time != "") {
-            $time = $request->time;
+        if (isset($data['time']) && $data['time'] != "") {
+            $time = $data['time'];
         } else {
             $time = "";
         }
-        if (isset($request->jobid) && $request->jobid != "") {
-            $jobid = $request->jobid;
+        if (isset($data['jobid']) && $data['jobid'] != "") {
+            $jobid = $data['jobid'];
         }
 
-        if (isset($request->session_time) && $request->session_time != "") {
-            $session = $request->session_time;
+        if (isset($data['session_time']) && $data['session_time'] != "") {
+            $session = $data['session_time'];
         } else {
             $session = "";
         }
 
-        if ($request->flagged == 'true') {
-            if($request->admincomment == '') return "Please, add comment";
+        if ($data['flagged'] == 'true') {
+            if($data['admincomment'] == '') return "Please, add comment";
             $flagged = 'yes';
         } else {
             $flagged = 'no';
         }
         
-        if ($request->manually_handled == 'true') {
+        if ($data['manually_handled'] == 'true') {
             $manually_handled = 'yes';
         } else {
             $manually_handled = 'no';
         }
 
-        if ($request->by_admin == 'true') {
+        if ($data['by_admin'] == 'true') {
             $by_admin = 'yes';
         } else {
             $by_admin = 'no';
         }
 
-        if (isset($request->admincomment) && $request->admincomment != "") {
-            $admincomment = $request->admincomment;
+        if (isset($data['admincomment']) && $data['admincomment'] != "") {
+            $admincomment = $data['admincomment'];
         } else {
             $admincomment = "";
         }
@@ -302,35 +251,25 @@ class BookingController extends Controller
 
         }
 
-         // for vue or other front end framework we need and recommanded way to send response like this :
-            return response([
-                'status' => true,
-                'response' => 'Record Updated'
-             ], Response::HTTP_OK);
+        return response('Record updated!');
     }
 
     public function reopen(Request $request)
     {
-        $response = $this->repository->reopen($request);
+        $data = $request->all();
+        $response = $this->repository->reopen($data);
 
-       // for vue or other front end framework we need and recommanded way to send response like this :
-        return response([
-            'status' => true,
-            'response' => $response
-         ], Response::HTTP_OK);
+        return response($response);
     }
 
     public function resendNotifications(Request $request)
     {
-        $job = $this->repository->find($request->jobid);
+        $data = $request->all();
+        $job = $this->repository->find($data['jobid']);
         $job_data = $this->repository->jobToData($job);
         $this->repository->sendNotificationTranslator($job, $job_data, '*');
 
-        // for vue or other front end framework we need and recommanded way to send response like this :
-            return response([
-                'status' => true,
-                'success' => 'Push sent'
-             ], Response::HTTP_OK);
+        return response(['success' => 'Push sent']);
     }
 
     /**
@@ -340,7 +279,8 @@ class BookingController extends Controller
      */
     public function resendSMSNotifications(Request $request)
     {
-        $job = $this->repository->find($request->jobid);
+        $data = $request->all();
+        $job = $this->repository->find($data['jobid']);
         $job_data = $this->repository->jobToData($job);
 
         try {

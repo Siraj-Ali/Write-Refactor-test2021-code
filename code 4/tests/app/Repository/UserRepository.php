@@ -41,69 +41,25 @@ class UserRepository extends BaseRepository
         $this->logger->pushHandler(new FirePHPHandler());
     }
 
-    // Test createOrUpdate function start
     public function createOrUpdate($id = null, $request)
-    {
-        $this->validate($request, [
-            'name' => 'required',
-            'company_id' => 'required',
-            'email' => 'required | email'. ($id != null) ? '| unique:users,email,'.$id : '',
-            'phone' => 'required|regex:/^([0-9\s\-\+\(\)]*)$/|between:12,14 | unique:users,phone,'.auth('api')->user()->id
-        ]);
-        $user = is_null($id) ? new User : User::findOrFail($id);
-        $user->user_type = $request->role;
-        $user->name = $request->name;
-        $user->company_id = $request->company_id != '' ? $request->company_id : 0;
-        $user->department_id = $request->department_id != '' ? $request->department_id : 0;
-        $user->email = $request->email;
-        $user->dob_or_orgid = $request->dob_or_orgid;
-        $user->phone = $request->phone;
-        $user->mobile = $request->mobile;
-        if (!$id || $id && $request['password']) $user->password = bcrypt($request['password']);
-        $user->detachAllRoles();
-        if($user->save()) {
-            $data = array();
-            $this->CreateUserMeta($request, $data);
-            if ($request['new_towns']) {
+    { 
+        $model = is_null($id) ? new User : User::findOrFail($id);
+        $model->user_type = $request['role'];
+        $model->name = $request['name'];
+        $model->company_id = $request['company_id'] != '' ? $request['company_id'] : 0;
+        $model->department_id = $request['department_id'] != '' ? $request['department_id'] : 0;
+        $model->email = $request['email'];
+        $model->dob_or_orgid = $request['dob_or_orgid'];
+        $model->phone = $request['phone'];
+        $model->mobile = $request['mobile'];
 
-                $towns = new Town;
-                $towns->townname = $request['new_towns'];
-                $towns->save();
-                $newTownsId = $towns->id;
-            }
-    
-            $townidUpdated = [];
-            if ($request['user_towns_projects']) {
-                $del = DB::table('user_towns')->where('user_id', '=', $model->id)->delete();
-                foreach ($request['user_towns_projects'] as $townId) {
-                    $userTown = new UserTowns();
-                    $already_exit = $userTown::townExist($model->id, $townId);
-                    if ($already_exit == 0) {
-                        $userTown->user_id = $model->id;
-                        $userTown->town_id = $townId;
-                        $userTown->save();
-                    }
-                    $townidUpdated[] = $townId;
-    
-                }
-            }
-    
-            if ($request['status'] == '1') {
-                if ($user->status != '1') {
-                    $this->enable($user->id);
-                }
-            } else {
-                if ($user->status != '0') {
-                    $this->disable($user->id);
-                }
-            }
-        }
 
-        
-        return $user ? $user : false;
-    }
+        if (!$id || $id && $request['password']) $model->password = bcrypt($request['password']);
+        $model->detachAllRoles();
+        $model->save();
+        $model->attachRole($request['role']);
+        $data = array();
 
-    public function CreateUserMeta($request, $data) {
         if ($request['role'] == env('CUSTOMER_ROLE_ID')) {
 
             if($request['consumer_type'] == 'paid')
@@ -142,6 +98,7 @@ class UserRepository extends BaseRepository
             $user_meta->maximum_km = isset($request['maximum_km']) ? $request['maximum_km'] : '';
             $user_meta->save();
             $new_meta = $user_meta->toArray();
+
             $blacklistUpdated = [];
             $userBlacklist = UsersBlacklist::where('user_id', $id)->get();
             $userTranslId = collect($userBlacklist)->pluck('translator_id')->all();
@@ -217,10 +174,42 @@ class UserRepository extends BaseRepository
             }
 
         }
+
+        if ($request['new_towns']) {
+
+            $towns = new Town;
+            $towns->townname = $request['new_towns'];
+            $towns->save();
+            $newTownsId = $towns->id;
+        }
+
+        $townidUpdated = [];
+        if ($request['user_towns_projects']) {
+            $del = DB::table('user_towns')->where('user_id', '=', $model->id)->delete();
+            foreach ($request['user_towns_projects'] as $townId) {
+                $userTown = new UserTowns();
+                $already_exit = $userTown::townExist($model->id, $townId);
+                if ($already_exit == 0) {
+                    $userTown->user_id = $model->id;
+                    $userTown->town_id = $townId;
+                    $userTown->save();
+                }
+                $townidUpdated[] = $townId;
+
+            }
+        }
+
+        if ($request['status'] == '1') {
+            if ($model->status != '1') {
+                $this->enable($model->id);
+            }
+        } else {
+            if ($model->status != '0') {
+                $this->disable($model->id);
+            }
+        }
+        return $model ? $model : false;
     }
-
-    // Test createOrUpdate function End
-
 
     public function enable($id)
     {
