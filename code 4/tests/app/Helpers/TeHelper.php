@@ -44,9 +44,7 @@ class TeHelper
     {
         $due_time = Carbon::parse($due_time);
         $created_at = Carbon::parse($created_at);
-
         $difference = $due_time->diffInHours($created_at);
-
         $time = ($difference <= 90)  ? $due_time : ($difference <= 24)  ? $created_at->addMinutes(90) :
              ($difference > 24 && $difference <= 72)  ? $created_at->addHours(16) : $due_time->subHours(48);
         

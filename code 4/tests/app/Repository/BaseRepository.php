@@ -63,7 +63,7 @@ class BaseRepository
 
     public function with($array)
     {
-        return $this->model->with($array);
+        return $this->model->with($array);  
     }
 
     /**

@@ -142,7 +142,6 @@ class UserRepository extends BaseRepository
             $user_meta->maximum_km = isset($request['maximum_km']) ? $request['maximum_km'] : '';
             $user_meta->save();
             $new_meta = $user_meta->toArray();
-
             $blacklistUpdated = [];
             $userBlacklist = UsersBlacklist::where('user_id', $id)->get();
             $userTranslId = collect($userBlacklist)->pluck('translator_id')->all();

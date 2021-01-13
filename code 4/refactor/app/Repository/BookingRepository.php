@@ -241,7 +241,7 @@ class BookingRepository extends BaseRepository
                 $data['will_expire_at'] = TeHelper::willExpireAt($due, $data['b_created_at']);
             $data['by_admin'] = isset($data['by_admin']) ? $data['by_admin'] : 'no';
 
-            $job = $cuser->jobs()->create($data);
+            $job = $cuser->jobs()->create($data); 
 
             $response['status'] = 'success';
             $response['id'] = $job->id;

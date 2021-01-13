@@ -10,7 +10,7 @@ use DTApi\Repository\BookingRepository;
 
 use Symfony\Component\HttpFoundation\Response;
 
-/**
+/** 
  * Class BookingController
  * @package DTApi\Http\Controllers
  */
